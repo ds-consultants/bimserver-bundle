@@ -8,7 +8,6 @@ import java.util.Hashtable;
 import java.util.List;
 import org.apache.sling.settings.SlingSettingsService;
 import org.bimserver.emf.MetaDataManager;
-import org.ifcopenshell.IfcGeomServerClient;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -37,8 +36,7 @@ public class ModuleActivator implements BundleActivator {
         ServiceReference<SlingSettingsService> slingSettingsReference = bc.getServiceReference(SlingSettingsService.class);
         String slingHome = bc.getService(slingSettingsReference).getSlingHomePath();
         bc.ungetService(slingSettingsReference);
-        // TODO make S3 independent
-        try (IfcGeomServerClient geomServerClient = new IfcGeomServerClient(IfcGeomServerClient.ExecutableSource.S3, Paths.get(slingHome, "ifcgeomserver"))) {
+        try (DsIfcGeomServerClient geomServerClient = new DsIfcGeomServerClient(DsIfcGeomServerClient.ExecutableSource.GITHUB_RELEASE, Paths.get(slingHome, "ifcgeomserver"))) {
             LOG.info("IfcGeomServerClient executables available: {}", geomServerClient.getExecutableFilename());
             LOG.info("Initializing GeomServerExecutablePathProvider service");
             GeomServerExecutablePathProvider geomServerPathProvider = new GeomServerExecutablePathProviderImpl(geomServerClient.getExecutableFilename());
