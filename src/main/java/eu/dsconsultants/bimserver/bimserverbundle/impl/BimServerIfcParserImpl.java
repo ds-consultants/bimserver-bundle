@@ -4,7 +4,6 @@ import eu.dsconsultants.bimserver.bimserverbundle.BimServerIfcParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import org.bimserver.emf.IfcModelInterface;
 import org.bimserver.ifc.step.deserializer.IfcStepDeserializer;
@@ -26,29 +25,19 @@ public class BimServerIfcParserImpl implements BimServerIfcParser {
     }
 
     @Override
-    public List<org.bimserver.models.ifc2x3tc1.IfcProduct> parseIfc2x3tc1(File file) {
-        try {
+    public List<org.bimserver.models.ifc2x3tc1.IfcProduct> parseIfc2x3tc1(File file) throws DeserializeException {
             IfcStepDeserializer deserializer = deserializersProvider.getIfc2x3tc1StepDeserializer();
             IfcModelInterface model = deserializer.read(file);
             generateGeometry(file, model);
             return model.getAllWithSubTypes(org.bimserver.models.ifc2x3tc1.IfcProduct.class);
-        } catch (DeserializeException ex) {
-            LOG.error("Exception during file deserialization", ex);
-        }
-        return Collections.emptyList();
     }
 
     @Override
-    public List<org.bimserver.models.ifc4.IfcProduct> parseIfc4(File file) {
-        try {
+    public List<org.bimserver.models.ifc4.IfcProduct> parseIfc4(File file) throws DeserializeException {
             IfcStepDeserializer deserializer = deserializersProvider.getIfc4StepDeserializer();
             IfcModelInterface model = deserializer.read(file);
             generateGeometry(file, model);
             return model.getAllWithSubTypes(org.bimserver.models.ifc4.IfcProduct.class);
-        } catch (DeserializeException ex) {
-            LOG.error("Exception during file deserialization", ex);
-        }
-        return Collections.emptyList();
     }
 
     private void generateGeometry(File file, IfcModelInterface model) {
