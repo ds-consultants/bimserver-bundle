@@ -30,7 +30,7 @@ public class BimServerIfcParserImpl implements BimServerIfcParser {
         try {
             IfcStepDeserializer deserializer = deserializersProvider.getIfc2x3tc1StepDeserializer();
             IfcModelInterface model = deserializer.read(file);
-            generateGeometry(file, model);
+            generateGeometry(file, model, true);
             return model.getAllWithSubTypes(org.bimserver.models.ifc2x3tc1.IfcProduct.class);
         } catch (DeserializeException ex) {
             throw new BimServerApiException(ex);
@@ -42,20 +42,25 @@ public class BimServerIfcParserImpl implements BimServerIfcParser {
         try {
             IfcStepDeserializer deserializer = deserializersProvider.getIfc4StepDeserializer();
             IfcModelInterface model = deserializer.read(file);
-            generateGeometry(file, model);
+            generateGeometry(file, model, false);
             return model.getAllWithSubTypes(org.bimserver.models.ifc4.IfcProduct.class);
         } catch (DeserializeException ex) {
             throw new BimServerApiException(ex);
         }
     }
 
-    private void generateGeometry(File file, IfcModelInterface model) {
+    private void generateGeometry(File file, IfcModelInterface model, boolean isIfc2x3tc1) {
         try (IfcOpenShellEngine renderEngine = new IfcOpenShellEngine(geomServerPathProvider.getGeomServerExecutablePath())) {
             renderEngine.init();
             LOG.info("Using executable " + geomServerPathProvider.getGeomServerExecutablePath());
 
             try (FileInputStream fis = new FileInputStream(file)) {
-                InputStreamBasedOfflineGeometryGenerator generator = new InputStreamBasedOfflineGeometryGenerator(model, fis, renderEngine);
+                AbstractInputStreamGeometryGenerator generator;
+                if (isIfc2x3tc1) {
+                    generator = new Ifc2x3InputStreamGeometryGenerator(model, fis, renderEngine);
+                } else {
+                    generator = new Ifc4InputStreamGeometryGenerator(model, fis, renderEngine);
+                }
                 generator.generateForAllElements();
             }
         } catch (IOException | RenderEngineException ex) {
